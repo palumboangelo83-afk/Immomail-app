@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immomail</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#F5F2EE;--surface:#FFF;--surface2:#F0EDE8;
+    --text:#1A1714;--text2:#6B6460;
+    --accent:#C84B2F;--accent2:#E8956D;
+    --green:#2D6A4F;--green-light:#E8F5EE;
+    --amber:#B5451B;--amber-light:#FEF3EC;
+    --blue:#1B4F8A;--blue-light:#EEF4FB;
+    --border:#E2DDD8;--shadow:0 2px 16px rgba(26,23,20,0.08);--radius:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto}
+  .header{background:var(--text);color:white;padding:20px 20px 0;position:sticky;top:0;z-index:100}
+  .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .logo{font-family:'DM Serif Display',serif;font-size:22px}
+  .logo span{color:var(--accent2);font-style:italic}
+  .status-dot{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.6)}
+  .dot{width:7px;height:7px;border-radius:50%;background:#4CAF50;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .nav{display:flex;border-bottom:1px solid rgba(255,255,255,0.1)}
+  .nav-tab{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+  .nav-tab.active{color:white;border-bottom-color:var(--accent2)}
+  .content{padding:20px 16px 100px}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+  .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+  .stat-card{background:var(--surface);border-radius:12px;padding:14px 12px;text-align:center;border:1px solid var(--border)}
+  .stat-num{font-family:'DM Serif Display',serif;font-size:28px;line-height:1;margin-bottom:4px}
+  .stat-label{font-size:10px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .section-title{font-family:'DM Serif Display',serif;font-size:18px}
+  .btn-add{display:flex;align-items:center;gap:6px;background:var(--accent);color:white;border:none;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .btn-add:active{transform:scale(0.96)}
+  .bien-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border);box-shadow:var(--shadow);animation:slideIn 0.3s ease both}
+  @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .bien-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+  .bien-ref{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;background:var(--amber-light);padding:3px 8px;border-radius:20px}
+  .bien-prix{font-family:'DM Serif Display',serif;font-size:18px}
+  .bien-adresse{font-size:13px;font-weight:500;margin-bottom:4px;line-height:1.4}
+  .bien-surface{font-size:12px;color:var(--text2);margin-bottom:12px}
+  .bien-links{display:flex;gap:8px}
+  .bien-link{flex:1;padding:8px;border-radius:8px;font-size:11px;font-weight:500;text-align:center;text-decoration:none;border:1px solid var(--border);color:var(--text2);background:var(--surface2)}
+  .bien-stats{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap}
+  .bien-stat-pill{font-size:11px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px}
+  .bien-stat-pill.active{background:var(--green-light);color:var(--green)}
+  .form-overlay{display:none;position:fixed;inset:0;background:rgba(26,23,20,0.6);z-index:200;backdrop-filter:blur(4px)}
+  .form-overlay.open{display:flex;align-items:flex-end}
+  .form-sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:430px;margin:0 auto;padding:24px 20px 40px;max-height:90vh;overflow-y:auto;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1)}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .form-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+  .form-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:20px}
+  .form-group{margin-bottom:16px}
+  .form-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block}
+  .form-input,.form-select,.form-textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:white}
+  .form-textarea{min-height:140px;resize:vertical;line-height:1.6}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .form-hint{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4}
+  .form-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+  .form-section-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px}
+  .btn-submit{width:100%;padding:15px;background:var(--text);color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:8px;transition:all 0.15s}
+  .btn-submit:disabled{opacity:0.5;cursor:not-allowed}
+  .btn-cancel{width:100%;padding:12px;background:transparent;color:var(--text2);border:none;border-radius:12px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .filters{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .filters::-webkit-scrollbar{display:none}
+  .filter-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2)}
+  .filter-pill.active{background:var(--text);color:white;border-color:var(--text)}
+  .log-card{background:var(--surface);border-radius:12px;padding:14px 16px;margin-bottom:8px;border:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+  .log-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+  .log-icon.envoye{background:var(--green-light)}
+  .log-icon.attente{background:var(--amber-light)}
+  .log-icon.doublon{background:var(--blue-light)}
+  .log-icon.ignore{background:var(--surface2)}
+  .log-body{flex:1;min-width:0}
+  .log-email{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+  .log-meta{font-size:11px;color:var(--text2);display:flex;gap:8px}
+  .log-ref{font-weight:600;color:var(--accent)}
+  .log-statut{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+  .log-statut.envoye{background:var(--green-light);color:var(--green)}
+  .log-statut.en_attente{background:var(--amber-light);color:var(--amber)}
+  .log-statut.doublon{background:var(--blue-light);color:var(--blue)}
+  .log-statut.ignore{background:var(--surface2);color:var(--text2)}
+  .chart-card{background:var(--surface);border-radius:var(--radius);padding:20px;margin-bottom:16px;border:1px solid var(--border)}
+  .chart-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .bar-label{font-size:12px;color:var(--text2);width:80px;flex-shrink:0}
+  .bar-track{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;background:var(--accent)}
+  .bar-val{font-size:12px;font-weight:600;width:24px;text-align:right}
+  .donut-wrap{display:flex;align-items:center;gap:20px}
+  .donut{position:relative;width:100px;height:100px;flex-shrink:0}
+  .donut svg{transform:rotate(-90deg)}
+  .donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+  .donut-num{font-family:'DM Serif Display',serif;font-size:22px;line-height:1}
+  .donut-sub{font-size:10px;color:var(--text2)}
+  .legend-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .legend-label{color:var(--text2);flex:1}
+  .legend-val{font-weight:600}
+  .empty{text-align:center;padding:48px 20px;color:var(--text2)}
+  .empty-icon{font-size:36px;margin-bottom:12px}
+  .empty-text{font-size:14px}
+  .loading{text-align:center;padding:32px;color:var(--text2);font-size:14px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:12px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.3s;z-index:400;white-space:nowrap}
+  .toast.show{opacity:1}
+  .toast.error{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Immo<span>mail</span></div>
+    <div class="status-dot"><div class="dot"></div>En ligne</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-tab active" onclick="showTab('biens',this)">Biens</div>
+    <div class="nav-tab" onclick="showTab('log',this)">Log</div>
+    <div class="nav-tab" onclick="showTab('stats',this)">Stats</div>
+  </nav>
+</div>
+
+<div class="content">
+
+  <!-- BIENS -->
+  <div class="tab-content active" id="tab-biens">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-num" id="nb-biens">—</div><div class="stat-label">Biens</div></div>
+      <div class="stat-card"><div class="stat-num" id="nb-mois">—</div><div class="stat-label">Ce mois</div></div>
+      <div class="stat-card"><div class="stat-num" id="nb-envoyes">—</div><div class="stat-label">Envoyés</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Mes biens</div>
+      <button class="btn-add" onclick="openForm()">+ Ajouter</button>
+    </div>
+    <div id="biens-list"><div class="loading">Chargement...</div></div>
+  </div>
+
+  <!-- LOG -->
+  <div class="tab-content" id="tab-log">
+    <div class="filters">
+      <div class="filter-pill active" onclick="filterLog('tous',this)">Tous</div>
+      <div class="filter-pill" onclick="filterLog('envoye',this)">Envoyés</div>
+      <div class="filter-pill" onclick="filterLog('en_attente',this)">En attente</div>
+      <div class="filter-pill" onclick="filterLog('doublon',this)">Doublons</div>
+      <div class="filter-pill" onclick="filterLog('ignore',this)">Ignorés</div>
+    </div>
+    <div id="log-list"><div class="loading">Chargement...</div></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="tab-content" id="tab-stats">
+    <div class="chart-card">
+      <div class="chart-title">Taux de réponse</div>
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#F0EDE8" stroke-width="12"/>
+            <circle id="donut-arc" cx="50" cy="50" r="40" fill="none" stroke="#C84B2F" stroke-width="12" stroke-dasharray="188" stroke-dashoffset="188" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center"><div class="donut-num" id="taux-pct">—</div><div class="donut-sub">répondu</div></div>
+        </div>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Biens les plus demandés</div>
+      <div id="top-biens"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FORMULAIRE -->
+<div class="form-overlay" id="form-overlay" onclick="handleOverlayClick(event)">
+  <div class="form-sheet">
+    <div class="form-handle"></div>
+    <div class="form-title">Nouveau bien</div>
+    <div class="form-group">
+      <label class="form-label">Adresse complète</label>
+      <input class="form-input" id="f-adresse" type="text" placeholder="Rue Paradis 15, 13006 Marseille 6eme arrondissement">
+      <div class="form-hint">Copie exactement l'adresse telle qu'elle apparaît dans SweepBright</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prix</label>
+        <input class="form-input" id="f-prix" type="text" placeholder="185 000 €">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Surface</label>
+        <input class="form-input" id="f-surface" type="text" placeholder="65 m²">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type de bien</label>
+      <select class="form-select" id="f-type">
+        <option>Appartement</option><option>Maison</option><option>Villa</option>
+        <option>Studio</option><option>Local commercial</option><option>Terrain</option><option>Immeuble</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lien Calendly</label>
+      <input class="form-input" id="f-calendly" type="url" value="https://calendly.com/palumboangelo83/30min">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lien visite virtuelle</label>
+      <input class="form-input" id="f-visite" type="url" placeholder="https://matterport.com/...">
+    </div>
+    <hr class="form-divider">
+    <div class="form-section-label">Email type de réponse</div>
+    <div class="form-group">
+      <textarea class="form-textarea" id="f-email">Bonjour,
+
+Merci pour votre intérêt concernant le bien situé au {{bien_adresse}}.
+
+Vous trouverez ci-dessous toutes les informations relatives à ce bien :
+- Prix de vente : {{bien_prix}}
+- Surface : {{bien_surface}}
+
+Vous pouvez dès à présent consulter la visite virtuelle via ce lien : {{visite_virtuelle}}
+
+Afin d'organiser une visite physique, je vous invite à réserver directement un créneau dans mon agenda : {{calendly}}
+
+Je reste disponible pour toute question complémentaire.
+
+Cordialement,
+{{agent_nom}}
+Orpi — Votre agence immobilière</textarea>
+      <div class="form-hint">Variables : {{bien_adresse}} {{bien_prix}} {{bien_surface}} {{visite_virtuelle}} {{calendly}} {{agent_nom}}</div>
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="soumettreFormulaire()">Créer le bien</button>
+    <button class="btn-cancel" onclick="closeForm()">Annuler</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://immomail-production.up.railway.app';
+
+async function chargerBiens() {
+  try {
+    const r = await fetch(API + '/biens');
+    const data = await r.json();
+    const biens = data.biens || [];
+    document.getElementById('nb-biens').textContent = biens.length;
+    const list = document.getElementById('biens-list');
+    if (!biens.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><div class="empty-text">Aucun bien pour l\'instant</div></div>';
+      return;
+    }
+    list.innerHTML = biens.map((b, i) => `
+      <div class="bien-card" style="animation-delay:${i*0.06}s">
+        <div class="bien-header">
+          <span class="bien-ref">${b.ref || '—'}</span>
+          <span class="bien-prix">${b.prix || '—'}</span>
+        </div>
+        <div class="bien-adresse">${b.adresse || '—'}</div>
+        <div class="bien-surface">${b.surface ? b.surface : 'Surface à compléter'}</div>
+        <div class="bien-links">
+          <a class="bien-link" href="${b.calendly || '#'}" target="_blank">📅 Calendly</a>
+          <a class="bien-link" href="${b.visite_virtuelle || '#'}" target="_blank">🏠 Visite virtuelle</a>
+        </div>
+        <div class="bien-stats"><span class="bien-stat-pill active">Actif</span></div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('biens-list').innerHTML = '<div class="empty"><div class="empty-text">Impossible de charger les biens</div></div>';
+  }
+}
+
+async function chargerLog() {
+  try {
+    const r = await fetch(API + '/log');
+    const data = await r.json();
+    const logs = data.log || [];
+    const icons = { envoye:'✅', en_attente:'⏳', doublon:'🔁', ignore:'🗑' };
+    const list = document.getElementById('log-list');
+    if (!logs.length) {
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Aucune demande pour l\'instant</div></div>';
+      return;
+    }
+    // Stats
+    const mois = new Date(); mois.setDate(1);
+    const moisLogs = logs.filter(l => new Date(l.date) >= mois);
+    const envoyes = logs.filter(l => l.statut === 'envoye');
+    document.getElementById('nb-mois').textContent = moisLogs.length;
+    document.getElementById('nb-envoyes').textContent = envoyes.length;
+    // Stats page
+    const total = logs.length;
+    const pct = total ? Math.round(envoyes.length / total * 100) : 0;
+    document.getElementById('taux-pct').textContent = pct + '%';
+    document.getElementById('donut-arc').setAttribute('stroke-dashoffset', 188 - (188 * pct / 100));
+    document.getElementById('donut-legend').innerHTML = [
+      {label:'Envoyés', color:'#C84B2F', val: envoyes.length},
+      {label:'En attente', color:'#E8956D', val: logs.filter(l=>l.statut==='en_attente').length},
+      {label:'Ignorés', color:'#F0EDE8', val: logs.filter(l=>l.statut==='ignore').length},
+    ].map(i=>`<div class="legend-item"><div class="legend-dot" style="background:${i.color}"></div><span class="legend-label">${i.label}</span><span class="legend-val">${i.val}</span></div>`).join('');
+    // Top biens
+    const counts = {};
+    logs.forEach(l => { if(l.ref_bien) counts[l.ref_bien] = (counts[l.ref_bien]||0)+1; });
+    const max = Math.max(...Object.values(counts), 1);
+    document.getElementById('top-biens').innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([ref,n])=>`
+      <div class="bar-row">
+        <div class="bar-label">${ref}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${n/max*100}%"></div></div>
+        <div class="bar-val">${n}</div>
+      </div>
+    `).join('');
+    // Log list
+    list.innerHTML = [...logs].reverse().map(l => `
+      <div class="log-card" data-statut="${l.statut}">
+        <div class="log-icon ${l.statut==='envoye'?'envoye':l.statut==='en_attente'?'attente':l.statut==='doublon'?'doublon':'ignore'}">${icons[l.statut]||'📧'}</div>
+        <div class="log-body">
+          <div class="log-email">${l.expediteur || '—'}</div>
+          <div class="log-meta"><span class="log-ref">${l.ref_bien||'—'}</span><span>·</span><span>${l.date||''}</span></div>
+        </div>
+        <span class="log-statut ${l.statut}">${l.statut==='en_attente'?'Attente':l.statut==='envoye'?'Envoyé':l.statut==='doublon'?'Doublon':'Ignoré'}</span>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('log-list').innerHTML = '<div class="empty"><div class="empty-text">Impossible de charger le log</div></div>';
+  }
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+function filterLog(statut, el) {
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.log-card').forEach(card=>{
+    card.style.display = (statut==='tous'||card.dataset.statut===statut)?'flex':'none';
+  });
+}
+
+function openForm() {
+  document.getElementById('form-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeForm() {
+  document.getElementById('form-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function handleOverlayClick(e) {
+  if(e.target===document.getElementById('form-overlay')) closeForm();
+}
+
+async function soumettreFormulaire() {
+  const adresse = document.getElementById('f-adresse').value.trim();
+  const prix = document.getElementById('f-prix').value.trim();
+  if(!adresse||!prix){showToast('Adresse et prix obligatoires','error');return;}
+  const btn = document.getElementById('btn-submit');
+  btn.disabled=true; btn.textContent='Création en cours...';
+  try {
+    const r = await fetch(API+'/bien', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        adresse, prix,
+        surface: document.getElementById('f-surface').value.trim(),
+        calendly: document.getElementById('f-calendly').value.trim(),
+        visite: document.getElementById('f-visite').value.trim(),
+        email_type: document.getElementById('f-email').value.trim(),
+      })
+    });
+    const data = await r.json();
+    if(data.success) {
+      closeForm();
+      showToast('Bien créé ! Ref : '+data.ref);
+      await chargerBiens();
+      await chargerLog();
+    } else {
+      showToast(data.error||'Erreur','error');
+    }
+  } catch(e) {
+    showToast('Erreur de connexion','error');
+  }
+  btn.disabled=false; btn.textContent='Créer le bien';
+}
+
+function showToast(msg, type='') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Init
+chargerBiens();
+chargerLog();
+setInterval(()=>{chargerBiens();chargerLog();}, 60000);
+</script>
+</body>
+</html>
